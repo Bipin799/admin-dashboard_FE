@@ -39,7 +39,10 @@ const Login = () => {
       return;
     }
     axios
-      .get("http://localhost:5000/loggedInUsers")
+      // for local host
+      //.get("http://localhost:5000/loggedInUsers")
+      // for the backend
+      .get("http://localhost:5000/users")
       .then((response) => {
         const users = response.data || [];
 

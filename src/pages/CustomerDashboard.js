@@ -12,10 +12,10 @@ const CustomerDashboard = () => {
   const [editedData, setEditedData] = useState({ title: "", description: "", price: "" });
   const navigate = useNavigate();
   
- const PRODUCT_API_URL = process.env.REACT_APP_PRODUCT_API_URL;
+ //const PRODUCT_API_URL = process.env.REACT_APP_PRODUCT_API_URL;
 
   useEffect(() => {
-    fetch(PRODUCT_API_URL)
+    fetch("https://dummyjson.com/products")
       .then((res) => res.json())
       .then((data) => setProducts(data.products))
       .catch((error) => console.error("Error fetching products:", error));

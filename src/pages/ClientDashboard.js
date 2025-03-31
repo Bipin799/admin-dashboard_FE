@@ -123,7 +123,7 @@ function DemoPageContent({ pathname}) {
     setError(null);
     try {
       // Fetch data from your local JSON Server API
-      const response = await fetch('http://localhost:5001/products');
+      const response = await fetch('http://localhost:5000/api/products');
       const result = await response.json();
       setProducts(result); // Set the fetched data into state
     } catch (error) {
