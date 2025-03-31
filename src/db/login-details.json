@@ -1,0 +1,25 @@
+{
+  "loggedInUsers": [
+    {
+      "name": "akash",
+      "email": "bipin79it@gmail.com",
+      "role": "admin",
+      "password": "Bipin@123",
+      "id": "2"
+    },
+    {
+      "id": "3",
+      "name": "rahul",
+      "email": "rahul@123gmail.com",
+      "password": "Rahul@123",
+      "role": "client"
+    },
+    {
+      "id": "4",
+      "email": "aman@123gmail.com",
+      "password": "Aman@123",
+      "role": "customer",
+      "name": "aman"
+    }
+  ]
+}
