@@ -7,9 +7,8 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import ProtectedRoute from "./router/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import ProductDetails from "./pages/ProductDetails";
-import UserList from "./components/UserList";
-import DataTable from "./pages/DataTable";
-
+import ForgotPassword from "./pages/ForgotPassword";
+import Signup from "./pages/Signup";
 const App = () => {
   //console.log("Product API:", process.env.REACT_APP_PRODUCT_API_URL);
   // console.log("Users API:", process.env.REACT_APP_USERS_API_URL);
@@ -42,8 +41,9 @@ const App = () => {
         {/* ✅ 404 Route */}
         <Route path="*" element={<NotFound /> }/>
 
-        <Route path="/user" element={ <UserList />} />
-        <Route path="/table" element={<DataTable/>}/>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/register" element={<Signup />} />
+
       </Routes>
     </Router>
 

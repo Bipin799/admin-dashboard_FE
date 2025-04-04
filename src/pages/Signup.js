@@ -1,118 +1,120 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styled from "styled-components";
-import { Eye, EyeOff, Loader } from "react-feather";
+import axios from "axios";
+import { Eye, EyeOff } from "react-feather";
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+const Signup = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-    if (loggedInUser?.role) { 
-      switch (loggedInUser.role) {
-        case "admin":
-          navigate("/admin-dashboard");
-          break;
-        case "client":
-          navigate("/client-dashboard");
-          break;
-        case "customer":
-          navigate("/customer-dashboard");
-          break;
-        default:
-          break;
-      }
-    }
-  }, [navigate]);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    
-    if (!email.trim() || !password.trim()) {
-      setError("Email and password are required.");
-      toast.error("⚠️ Email and password cannot be empty!");
+
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("All fields are required");
+      toast.error("⚠️ Please fill in all fields");
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      toast.error("🔒 Passwords don't match");
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      toast.error("🔒 Password too short");
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await axios.get("http://localhost:5000/users");
-      const users = response.data || [];
-
-      if (users.length === 0) {
-        setError("No user found. Please register first.");
-        toast.error("No user found. Please register first.");
+      // Check if user exists
+      const { data: users } = await axios.get("http://localhost:5000/users");
+      if (users.some(user => user.email === formData.email)) {
+        setError("Email already registered");
+        toast.error("📧 Email already in use");
         setIsLoading(false);
         return;
       }
 
-      const matchedUser = users.find(
-        (user) => user.email === email && user.password === password
-      );
+      // Create new user
+      const newUser = {
+        id: String(users.length + 1),
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: "customer", // Default role
+        createdAt: new Date().toISOString()
+      };
 
-      if (!matchedUser) {
-        setError("Invalid email or password. Please try again.");
-        toast.error("❌ Incorrect email or password!");
-        setIsLoading(false);
-        return;
-      }
-
-      localStorage.setItem("loggedInUser", JSON.stringify(matchedUser));
-      localStorage.setItem("role", matchedUser.role);
-
-      toast.success("🎉 Login Successful!");
-
-      setTimeout(() => {
-        switch (matchedUser.role) {
-          case "admin":
-            navigate("/admin-dashboard");
-            break;
-          case "client":
-            navigate("/client-dashboard");
-            break;
-          case "customer":
-            navigate("/customer-dashboard");
-            break;
-          default:
-            navigate("/login");
-        }
-      }, 1000);
+      await axios.post("http://localhost:5000/users", newUser);
+      
+      toast.success("🎉 Account created successfully!");
+      setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
-      setError("Something went wrong. Please try again later.");
-      toast.error("⚠️ Error fetching users. Please try again later.");
-      console.error("Login Error:", error);
+      setError("Registration failed. Please try again.");
+      toast.error("⚠️ Registration failed");
+      console.error("Signup Error:", error);
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <LoginContainer>
-      <LoginCard>
-        <LoginHeader>
-          <Logo> E-Commerce App </Logo>
-          <h2>Welcome Back</h2>
-          <p>Please enter your credentials to login</p>
-        </LoginHeader>
+    <AuthContainer>
+      <AuthCard>
+        <AuthHeader>
+          <Logo>E-Commerce App</Logo>
+          <h2>Create Your Account</h2>
+          <p>Join us to start shopping</p>
+        </AuthHeader>
 
-        <LoginForm onSubmit={handleSubmit}>
+        <AuthForm onSubmit={handleSubmit}>
+          <FormGroup>
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Enter your full name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+
           <FormGroup>
             <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
               required
             />
           </FormGroup>
@@ -122,74 +124,71 @@ const Login = () => {
             <PasswordInputWrapper>
               <Input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a password (min 6 chars)"
+                value={formData.password}
+                onChange={handleChange}
                 required
               />
-
-              {/* <PasswordToggle 
+              <PasswordToggle 
+                type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </PasswordToggle> */}
-
-              <PasswordToggle 
-                  type="button"  // Add this to prevent form submission
-                  onClick={(e) => {
-                    e.preventDefault();  // Prevent default behavior
-                    setShowPassword(!showPassword);
-                  }}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </PasswordToggle>
-
             </PasswordInputWrapper>
           </FormGroup>
 
-          <ForgotPasswordLink to="/forgot-password">
-            Forgot password?
-          </ForgotPasswordLink>
+          <FormGroup>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
           <SubmitButton type="submit" disabled={isLoading}>
             {isLoading ? (
               <LoaderWrapper>
-                <Loader size={20} className="spin" />
-                <span>Signing in...</span>
+                <span className="spinner"></span>
+                <span>Creating account...</span>
               </LoaderWrapper>
             ) : (
-              "Sign In"
+              "Sign Up"
             )}
           </SubmitButton>
 
-          <SignUpText>
-            Don't have an account? <SignUpLink to="/register">Sign up</SignUpLink>
-          </SignUpText>
-        </LoginForm>
-      </LoginCard>
+          <AuthFooter>
+            Already have an account? <AuthLink to="/login">Log in</AuthLink>
+          </AuthFooter>
+        </AuthForm>
+      </AuthCard>
 
       <ToastContainer 
         position="top-center" 
-        autoClose={2000} 
+        autoClose={3000} 
         hideProgressBar={false}
         toastStyle={{
           fontSize: "14px",
           borderRadius: "8px",
         }}
       />
-    </LoginContainer>
+    </AuthContainer>
   );
 };
 
-export default Login;
 
 // Styled Components
-const LoginContainer = styled.div`
+const AuthContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -198,7 +197,7 @@ const LoginContainer = styled.div`
   padding: 20px;
 `;
 
-const LoginCard = styled.div`
+const AuthCard = styled.div`
   background: white;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -207,7 +206,7 @@ const LoginCard = styled.div`
   padding: 40px;
 `;
 
-const LoginHeader = styled.div`
+const AuthHeader = styled.div`
   text-align: center;
   margin-bottom: 32px;
 
@@ -231,7 +230,7 @@ const Logo = styled.div`
   color: #4f46e5;
 `;
 
-const LoginForm = styled.form`
+const AuthForm = styled.form`
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -291,26 +290,12 @@ const PasswordToggle = styled.button`
   }
 `;
 
-
-const ForgotPasswordLink = styled(Link)`
-  font-size: 13px;
-  color: #4f46e5;
-  text-align: right;
-  text-decoration: none;
-  margin-top: -8px;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
 const ErrorMessage = styled.div`
   color: #dc3545;
   font-size: 13px;
   padding: 8px 12px;
   background-color: #f8d7da;
   border-radius: 4px;
-  margin-top: -8px;
 `;
 
 const SubmitButton = styled.button`
@@ -341,8 +326,13 @@ const LoaderWrapper = styled.div`
   justify-content: center;
   gap: 8px;
 
-  .spin {
-    animation: spin 1s linear infinite;
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
   }
 
   @keyframes spin {
@@ -352,14 +342,14 @@ const LoaderWrapper = styled.div`
   }
 `;
 
-const SignUpText = styled.p`
+const AuthFooter = styled.p`
   text-align: center;
   font-size: 14px;
   color: #666;
   margin-top: 16px;
 `;
 
-const SignUpLink = styled(Link)`
+const AuthLink = styled(Link)`
   color: #4f46e5;
   font-weight: 500;
   text-decoration: none;
@@ -368,3 +358,5 @@ const SignUpLink = styled(Link)`
     text-decoration: underline;
   }
 `;
+
+export default Signup;
