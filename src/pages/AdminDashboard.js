@@ -262,6 +262,8 @@ import AdminAppBar from "../components/AdminAppBar";
 import UsersSection from "../components/UsersSection";
 import FullScreenLoader from "../components/FullScreenLoader";
 import AddEditProduct from "../components/AddEditProduct";
+import DashboardSection from "../components/DashboardSection";
+import SettingsSection from "../components/SettingsSection";
 
 // Constants
 const USERS_API_URL = process.env.REACT_APP_USERS_API_URL;
@@ -294,9 +296,11 @@ const AdminDashboard = () => {
       case "users":
         return <UsersSection USERS_API_URL={USERS_API_URL} TOAST_CONFIG={TOAST_CONFIG} />;
       case "dashboard":
-        return <div>Dashboard Content</div>;
+       // return <div>Dashboard Content</div>;
+       return <DashboardSection />;
       case "settings":
-        return <div>Settings Content</div>;
+        //return <div>Settings Content</div>;
+        return <SettingsSection />;
       case "products":
         return <AddEditProduct />;
         default:

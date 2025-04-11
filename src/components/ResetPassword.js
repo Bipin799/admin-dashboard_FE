@@ -1,16 +1,21 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useSearchParams, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import styled from "styled-components";
 import axios from "axios";
+import styled from "styled-components";
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
+const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const token = searchParams.get("token");
+  const userId = searchParams.get("id");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,24 +23,39 @@ const ForgotPassword = () => {
     setError("");
     setSuccess("");
 
-    if (!email.trim()) {
-      setError("Email is required");
-      toast.error("⚠️ Please enter your email address");
+    if (!password || !confirmPassword) {
+      setError("Please fill in all fields");
+      toast.error("⚠️ Please fill in all fields");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords don't match");
+      toast.error("⚠️ Passwords don't match");
       setIsLoading(false);
       return;
     }
 
     try {
-      // Simulate API call - replace with your actual endpoint
-      await axios.post("http://localhost:5000/auth/forgot-password", { email });
+      const response = await axios.post(
+        "http://localhost:5000/auth/reset-password",
+        {
+          userId,
+          token,
+          newPassword: password
+        }
+      );
       
-      setSuccess("Password reset link sent to your email");
-      toast.success("📧 Password reset link sent!");
+      setSuccess(response.data.message || "Password reset successfully");
+      toast.success("✅ Password reset successfully!");
       setTimeout(() => navigate("/login"), 3000);
     } catch (error) {
-      setError("Failed to send reset link. Please try again.");
-      toast.error("⚠️ Error sending reset link");
-      console.error("Forgot Password Error:", error);
+      const errorMessage = error.response?.data?.message || 
+                         "Error resetting password. Please try again.";
+      setError(errorMessage);
+      toast.error(`⚠️ ${errorMessage}`);
+      console.error("Reset Password Error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -47,19 +67,33 @@ const ForgotPassword = () => {
         <AuthHeader>
           <Logo>E-Commerce App</Logo>
           <h2>Reset Your Password</h2>
-          <p>Enter your email to receive a reset link</p>
+          <p>Enter your new password below</p>
         </AuthHeader>
 
         <AuthForm onSubmit={handleSubmit}>
           <FormGroup>
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="password">New Password</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="password"
+              type="password"
+              placeholder="Enter new password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
+              minLength="8"
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength="8"
             />
           </FormGroup>
 
@@ -70,10 +104,10 @@ const ForgotPassword = () => {
             {isLoading ? (
               <LoaderWrapper>
                 <span className="spinner"></span>
-                <span>Sending...</span>
+                <span>Resetting...</span>
               </LoaderWrapper>
             ) : (
-              "Send Reset Link"
+              "Reset Password"
             )}
           </SubmitButton>
 
@@ -96,7 +130,7 @@ const ForgotPassword = () => {
   );
 };
 
-// Reuse your existing styled components and add new ones
+// Reuse the same styled components from ForgotPassword.js
 const AuthContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -253,4 +287,4 @@ const AuthLink = styled(Link)`
   }
 `;
 
-export default ForgotPassword;
+export default ResetPassword;

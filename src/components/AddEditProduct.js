@@ -190,46 +190,65 @@ const AddEditProduct = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // const formDataToSend = new FormData();
-    // formDataToSend.append('title', formData.title);
-    // formDataToSend.append('price', formData.price);
-    // formDataToSend.append('description', formData.description);
-    // formDataToSend.append('category', formData.category);
-    // if (formData.image instanceof File) {
-    //   formDataToSend.append('image', formData.image);
-    // }
+    // const productData = {
+    //     title: formData.title, // Using 'name' to match backend
+    //     price: formData.price,
+    //     description: formData.description,
+    //     category: formData.category,
+    //     // For image, you would now just send the URL/path as string
+    //     image: formData.image instanceof File ? null : formData.image || null,
+    //   };
 
-    const productData = {
-        title: formData.title, // Using 'name' to match backend
-        price: formData.price,
-        description: formData.description,
-        category: formData.category,
-        // For image, you would now just send the URL/path as string
-        image: formData.image instanceof File ? null : formData.image
-      };
+    // try {
+    //   let response;
+    //   const headers = {
+    //     'Content-Type': 'application/json'
+    //   };  
+    //   if (currentProduct) {
+    //     // Update existing product
+    //     response = await fetch(`http://localhost:5000/api/products/${currentProduct.id}`, {
+    //       method: 'PUT',
+    //       //body: formDataToSend
+    //       headers: headers,
+    //       body: JSON.stringify(productData)
+    //     });
+    //   } else {
+    //     // Add new product
+    //     response = await fetch('http://localhost:5000/api/products', {
+    //       method: 'POST',
+    //       //body: formDataToSend
+    //       headers: headers,
+    //       body: JSON.stringify(productData)
+    //     });
+    //   }
 
+    const formDataToSend = new FormData();
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("price", formData.price);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("category", formData.category);
+  
+    // Append image only if it's a File (new upload)
+    if (formData.image instanceof File) {
+      formDataToSend.append("image", formData.image);
+    }
+  
     try {
       let response;
-      const headers = {
-        'Content-Type': 'application/json'
-      };  
+  
       if (currentProduct) {
-        // Update existing product
+        // For update — you must configure this in backend to accept FormData in PUT
         response = await fetch(`http://localhost:5000/api/products/${currentProduct.id}`, {
-          method: 'PUT',
-          //body: formDataToSend
-          headers: headers,
-          body: JSON.stringify(productData)
+          method: "PUT", // or use POST for update too if PUT is not configured
+          body: formDataToSend
         });
       } else {
-        // Add new product
-        response = await fetch('http://localhost:5000/api/products', {
-          method: 'POST',
-          //body: formDataToSend
-          headers: headers,
-          body: JSON.stringify(productData)
+        // Create product
+        response = await fetch("http://localhost:5000/api/products", {
+          method: "POST",
+          body: formDataToSend
         });
-      }
+      }  
 
       if (!response.ok) {
         throw new Error('Failed to save product');
@@ -297,7 +316,12 @@ const AddEditProduct = () => {
                   <CardMedia
                     component="img"
                     height="160"
-                    image={product.image}
+                    //image={product.image}
+                    image={
+                      product.image?.startsWith("http")
+                        ? product.image
+                        : `http://localhost:5000/uploads/${product.image}`
+                    }
                     alt={product.title}
                     sx={{ objectFit: "contain", p: 1 }}
                   />
@@ -385,8 +409,13 @@ const AddEditProduct = () => {
               />
               {formData.image && !(formData.image instanceof File) && (
                 <Box sx={{ mt: 1 }}>
-                  <img 
+                  {/* <img 
                     src={formData.image} 
+                    alt="Current product" 
+                    style={{ maxWidth: '100px', maxHeight: '100px' }} 
+                  /> */}
+                  <img 
+                    src={`http://localhost:5000/uploads/${formData.image}`} 
                     alt="Current product" 
                     style={{ maxWidth: '100px', maxHeight: '100px' }} 
                   />
