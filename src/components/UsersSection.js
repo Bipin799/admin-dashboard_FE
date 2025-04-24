@@ -7,11 +7,11 @@ import * as Yup from "yup";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-// Components
 import UserTable from "./UserTable";
 import EditUserModal from "./EditUserModal";
-import FullScreenLoader from "./FullScreenLoader";
+//import FullScreenLoader from "./FullScreenLoader";
 import UserForm from "./UserForm";
+import FullScreenLoader from "./FullScreenLoader";
 
 //const USERS_API_URL = process.env.REACT_APP_USERS_API_URL;
 
@@ -168,7 +168,7 @@ const UsersSection = ({ USERS_API_URL, TOAST_CONFIG }) => {
     : users;
 
   
-    const handleExportToExcel = () => {
+  const handleExportToExcel = () => {
       if (users.length === 0) {
         toast.warning("No data available to export.");
         return;
@@ -189,17 +189,14 @@ const UsersSection = ({ USERS_API_URL, TOAST_CONFIG }) => {
       const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
       
       saveAs(data, "UsersData.xlsx");
-    };
-    
+    };    
 
   return (
     <div className="users-section">
-      {loading && <FullScreenLoader />}
+      {loading}
       
       <UserForm 
-        onSubmit={formik.handleSubmit}
-        initialValues={formik.initialValues}
-        validationSchema={formik.validationSchema}
+        formik={formik}
         isLoading={loading}
       />
       

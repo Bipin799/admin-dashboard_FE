@@ -1,92 +1,3 @@
-// import React from "react";
-// import Box from '@mui/material/Box';
-// import Typography from '@mui/material/Typography';
-// import { useState, useEffect } from "react";
-// import Stack from '@mui/material/Stack';
-// import {
-//     Card, 
-//     CardContent, 
-//     CardMedia,
-//    } from '@mui/material';
-
-// const AddEditProduct = () => {
-//       const [products, setProducts] = useState([]);
-//       const [loading, setLoading] = useState(true);
-//       const [error, setError] = useState(null);
-
-//         useEffect(() => {
-//             fetchProducts();
-//         },[]);
-
-//       const fetchProducts = async () => {
-//         setLoading(true);
-//         setError(null);
-//         try {
-//           // Fetch data from your local JSON Server API
-//           const response = await fetch('http://localhost:5000/api/products');
-//           const result = await response.json();
-//           setProducts(result); // Set the fetched data into state
-//         } catch (error) {
-//           setError('Error fetching products.');
-//         } finally {
-//           setLoading(false);
-//         }
-//       };
-
-//       return(
-//         <React.Fragment>
-//         <Box sx={{ mt: 4 }}>
-//         {loading ? (
-//           <Typography variant="body1">Loading...</Typography>
-//         ) : error ? (
-//           <Typography variant="body1" color="error">{error}</Typography>
-//         ) : (
-//           <>
-//             {/* Display the product list */}
-//             <Stack direction="row" gap={1} flexWrap="wrap" justifyContent="center" sx={{ mt: 4 }}>
-//               {products.map((product) => (
-//                 <Card key={product.id} 
-//                 sx={{ 
-//                   width:300,
-//                   textAlign: 'center',
-//                   objectFit: "contain",
-//                   p: 1 
-//                    }}>
-//                   <CardMedia
-//                     component="img"
-//                     height="160"
-//                     image={product.image}
-//                     alt={product.title}
-//                     sx={{ objectFit: "contain", p: 1 }}
-//                   />
-//                   <CardContent>
-//                     <Typography variant="body">{product.title}</Typography>
-//                     <Typography variant="body2" color="text.secondary">
-//                       {product.description.length > 50 ? `${product.description.substring(0, 50)}...` : product.description}
-//                     </Typography>
-//                     <Typography variant="body1" sx={{ mt: 2 }}>Price: ₹{product.price}</Typography>
-//                     {/* <Typography variant="body2" color="text.secondary">
-//                       Rating: {product.rating.rate} ({product.rating.count} reviews)
-//                     </Typography> */}
-//                   </CardContent>
-
-//                 </Card>
-//               ))}
-//             </Stack>
-//           </>
-//         )}
-//       </Box>
-//       </React.Fragment>
-//       );
-// };
-
-// export default AddEditProduct;
-
-
-
-
-
-
 import React from "react";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -108,6 +19,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import {ToastContainer, toast } from "react-toastify";
+import axios from "axios";
 
 const AddEditProduct = () => {
   const [products, setProducts] = useState([]);
@@ -190,38 +103,6 @@ const AddEditProduct = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // const productData = {
-    //     title: formData.title, // Using 'name' to match backend
-    //     price: formData.price,
-    //     description: formData.description,
-    //     category: formData.category,
-    //     // For image, you would now just send the URL/path as string
-    //     image: formData.image instanceof File ? null : formData.image || null,
-    //   };
-
-    // try {
-    //   let response;
-    //   const headers = {
-    //     'Content-Type': 'application/json'
-    //   };  
-    //   if (currentProduct) {
-    //     // Update existing product
-    //     response = await fetch(`http://localhost:5000/api/products/${currentProduct.id}`, {
-    //       method: 'PUT',
-    //       //body: formDataToSend
-    //       headers: headers,
-    //       body: JSON.stringify(productData)
-    //     });
-    //   } else {
-    //     // Add new product
-    //     response = await fetch('http://localhost:5000/api/products', {
-    //       method: 'POST',
-    //       //body: formDataToSend
-    //       headers: headers,
-    //       body: JSON.stringify(productData)
-    //     });
-    //   }
-
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
     formDataToSend.append("price", formData.price);
@@ -264,18 +145,11 @@ const AddEditProduct = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
-
+    //if (!window.confirm('Are you sure you want to delete this product?')) return;
+    toast.success("product deleted successfully")
     setIsProcessing(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete product');
-      }
-
+      await axios.delete(`http://localhost:5000/api/products/${id}`);
       fetchProducts(); // Refresh the list
     } catch (error) {
       setError(error.message);
@@ -431,6 +305,7 @@ const AddEditProduct = () => {
           </DialogActions>
         </form>
       </Dialog>
+      <ToastContainer/>
     </React.Fragment>
   );
 };

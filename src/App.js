@@ -47,9 +47,6 @@ const App = () => {
 
       </Routes>
     </Router>
-
-   
-
 </React.Fragment>
 
   );
